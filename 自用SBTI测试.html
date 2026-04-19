@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>SBTI 3.0 旗舰版 | 人类精神状态深度扫描</title>
+    <style>
+        :root { --accent: #000; --bg: #ffffff; --gray: #f2f2f2; }
+        body { background: var(--bg); color: var(--accent); font-family: "PingFang SC", "Microsoft YaHei", sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .wrapper { width: 100%; max-width: 500px; padding: 40px; position: relative; }
+        
+        /* 装饰用心电图线 */
+        .line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: repeating-linear-gradient(90deg, #eee, #eee 10px, transparent 10px, transparent 20px); }
+        
+        #progress-text { font-size: 12px; font-weight: bold; letter-spacing: 2px; margin-bottom: 10px; display: block; }
+        .question { font-size: 26px; font-weight: 800; line-height: 1.4; margin: 20px 0 40px; }
+        
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .opt-btn { background: var(--bg); border: 1.5px solid #eee; padding: 18px 25px; border-radius: 4px; cursor: pointer; font-size: 16px; text-align: left; transition: all 0.2s ease; }
+        .opt-btn:hover { border-color: var(--accent); background: #fafafa; padding-left: 35px; }
+
+        #result-screen { display: none; text-align: left; animation: slideUp 0.6s ease; }
+        .res-code { font-size: 64px; font-weight: 900; letter-spacing: -3px; margin: 10px 0; }
+        .res-name { font-size: 24px; font-weight: bold; border-bottom: 4px solid var(--accent); display: inline-block; margin-bottom: 20px; }
+        .res-para { font-size: 16px; line-height: 2; color: #444; background: var(--gray); padding: 25px; border-radius: 8px; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .restart-btn { margin-top: 40px; width: 100%; padding: 20px; background: #000; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="line"></div>
+    <div id="quiz-screen">
+        <span id="progress-text">ANALYZING: 0%</span>
+        <div class="question" id="q-text"></div>
+        <div class="options" id="opt-box"></div>
+    </div>
+
+    <div id="result-screen">
+        <span style="font-size: 12px; font-weight: bold;">SCAN COMPLETED / 鉴定结果</span>
+        <div class="res-code" id="res-code"></div>
+        <div class="res-name" id="res-name"></div>
+        <div class="res-para" id="res-desc"></div>
+        <button class="restart-btn" onclick="location.reload()">不服？再次重塑灵魂</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "深夜你突然刷到一个很伤感的视频，你会？", a: [
+            { t: "迅速滑走，试图逃避任何深刻的情感交流", v: "B" },
+            { t: "把这首歌加进歌单，并脑补出一场旷世虐恋", v: "I" },
+            { t: "转发给某人后秒撤回，玩的就是心态", v: "I" },
+            { t: "面无表情地看完，内心想：这背景音乐挺好听", v: "B" }
+        ]},
+        { q: "对于‘消息秒回’这件事，你的态度是？", a: [
+            { t: "看到就回，因为怕对方等太久会让我焦虑", v: "S" },
+            { t: "用意念回过了，直到三天后发现没发出去", v: "L" },
+            { t: "取决于对方是谁，以及我手机剩多少电", v: "P" },
+            { t: "回复速度取决于我当下那口饭有没有咽下去", v: "L" }
+        ]},
+        { q: "在人群中你突然想放屁，但周围很安静，你会？", a: [
+            { t: "憋到脸红脖子粗，感觉这辈子没这么努力过", v: "B" },
+            { t: "咳嗽一声掩盖，结果节奏没对上，更尴尬了", v: "S" },
+            { t: "观察周围谁看起来比较像‘嫌疑人’，提前露出嫌弃表情", v: "I" },
+            { t: "随缘，只要我不尴尬，尴尬的就是别人", v: "P" }
+        ]},
+        { q: "如果你中了 500 万，你第一件事是干嘛？", a: [
+            { t: "人间蒸发，拉黑所有认识的人", v: "I" },
+            { t: "买齐所有昂贵但没用的电子产品", v: "E" },
+            { t: "先把工作辞了，然后在家睡它个七天七夜", v: "L" },
+            { t: "发朋友圈暗示自己很有钱，但又不明说", v: "S" }
+        ]},
+        { q: "当你在外面吃饭发现上错菜了，你会？", a: [
+            { t: "算了吧，将就吃吧，开口说话好累", v: "L" },
+            { t: "默默吃完，然后在心里给这家店写了 800 字差评", v: "B" },
+            { t: "礼貌指出，但说完立刻后悔是不是太麻烦人家了", v: "S" },
+            { t: "拍照发朋友圈：这菜长得真抽象", v: "E" }
+        ]},
+        { q: "你最长一次盯着手机不动（发呆/刷废片）是多久？", a: [
+            { t: "直到手机砸到我鼻梁上", v: "E" },
+            { t: "直到我突然想起来我还有个屁没放", v: "P" },
+            { t: "直到尿意让我不得不瞬移到厕所", v: "L" },
+            { t: "我从来不盯着手机看，手机只是我的义肢", v: "E" }
+        ]},
+        { q: "如果可以用一个词形容你的人际关系，你会选？", a: [
+            { t: "‘查无此人’", v: "B" },
+            { t: "‘单方面输出’", v: "I" },
+            { t: "‘互不打扰’", v: "P" },
+            { t: "‘云端好友’", v: "E" }
+        ]},
+        { q: "你觉得‘明天’是什么样子的？", a: [
+            { t: "今天的重播，而且没有字幕", v: "L" },
+            { t: "一个需要我去应付的庞大怪兽", v: "S" },
+            { t: "新的发疯契机", v: "I" },
+            { t: "不知道，取决于我几点关手机", v: "E" }
+        ]}
+    ];
+
+    let currentQ = 0;
+    let scores = { B:0, I:0, L:0, P:0, E:0, S:0 };
+
+    function render() {
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = "ANALYZING: " + Math.round(currentQ/questions.length*100) + "%";
+        document.getElementById('q-text').innerText = q.q;
+        const box = document.getElementById('opt-box');
+        box.innerHTML = '';
+        q.a.forEach(a => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = a.t;
+            btn.onclick = () => { scores[a.v]++; next(); };
+            box.appendChild(btn);
+        });
+    }
+
+    function next() {
+        currentQ++;
+        if(currentQ < questions.length) render();
+        else showResult();
+    }
+
+    function showResult() {
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        // 简易逻辑判定核心标签
+        const maxKey = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+        const resTitle = document.getElementById('res-name');
+        const resCode = document.getElementById('res-code');
+        const resDesc = document.getElementById('res-desc');
+
+        const data = {
+            I: ["【绝望的疯子】", "MENTAL-X", "你的大脑里装载了过量的互联网废料和陈年旧账。你是一个步履维艰的精神病患者，擅长在深夜通过自我折磨来获得某种扭曲的快感。建议离人群远点，你散发的‘发疯’气息已经快溢出屏幕了。"],
+            L: ["【瘫痪的土豆】", "LAZY-99", "你不是在偷懒，你是在进行一场漫长的‘生命节能计划’。你唯一的运动就是翻身，唯一的社交就是外卖到家时的那声‘谢谢’。你是一个会呼吸的植物，建议去森林里生活，那里没人嫌你没出息。"],
+            B: ["【社交伪装者】", "FAKE-ME", "你是那种在葬礼上都能想出笑话但绝对不敢笑出声的人。你戴着一张名为‘正常人’的廉价面具，实际上内心早已荒草丛生。你是一个彻头彻尾的伪人，甚至连你现在的表情都是演出来的。"],
+            E: ["【赛博义肢人】", "DATA-MAN", "如果你没了手机，你大概会在三秒内丧失基本的人类生存能力。你的感情存在云端，你的记忆存在收藏夹，你的尊严存在点赞数里。你不是人类，你是互联网排泄出来的活体数据。"],
+            S: ["【讨好型废物】", "NICE-TRASH", "你这种人活得最累，因为你甚至在为‘别人可能在讨厌你’这件事道歉。你是一个没有脊椎的社交软体，试图让每个人都开心，结果除了你自己，大家都挺开心的。"],
+            P: ["【职业摆烂王】", "FREE-DOM", "你是一个自由的混蛋。你对世界没有要求，世界对你也没有希望。你处于一种‘死后的平静’中，任何困难在你面前都会因为你懒得理它而自动消失。你是无敌的，因为你已经没什么可以失去了。"]
+        };
+
+        const r = data[maxKey];
+        resName.innerText = r[0];
+        resCode.innerText = r[1];
+        resDesc.innerHTML = "<b>深度报告：</b>" + r[2];
+    }
+
+    render();
+</script>
+</body>
+</html>
