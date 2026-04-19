@@ -2,152 +2,495 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>SBTI 3.0 旗舰版 | 人类精神状态深度扫描</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SBTI 6.0 Pro | 精神状态终极扫描仪</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
-        :root { --accent: #000; --bg: #ffffff; --gray: #f2f2f2; }
-        body { background: var(--bg); color: var(--accent); font-family: "PingFang SC", "Microsoft YaHei", sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .wrapper { width: 100%; max-width: 500px; padding: 40px; position: relative; }
-        
-        /* 装饰用心电图线 */
-        .line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: repeating-linear-gradient(90deg, #eee, #eee 10px, transparent 10px, transparent 20px); }
-        
-        #progress-text { font-size: 12px; font-weight: bold; letter-spacing: 2px; margin-bottom: 10px; display: block; }
-        .question { font-size: 26px; font-weight: 800; line-height: 1.4; margin: 20px 0 40px; }
-        
-        .options { display: flex; flex-direction: column; gap: 12px; }
-        .opt-btn { background: var(--bg); border: 1.5px solid #eee; padding: 18px 25px; border-radius: 4px; cursor: pointer; font-size: 16px; text-align: left; transition: all 0.2s ease; }
-        .opt-btn:hover { border-color: var(--accent); background: #fafafa; padding-left: 35px; }
+        :root {
+            --ios-bg: #F2F2F7;
+            --ios-card: #FFFFFF;
+            --ios-text: #000000;
+            --ios-subtext: #8E8E93;
+            --ios-accent: #007AFF; /* iOS 蓝色 */
+            --ios-border: #C6C6C8;
+        }
 
-        #result-screen { display: none; text-align: left; animation: slideUp 0.6s ease; }
-        .res-code { font-size: 64px; font-weight: 900; letter-spacing: -3px; margin: 10px 0; }
-        .res-name { font-size: 24px; font-weight: bold; border-bottom: 4px solid var(--accent); display: inline-block; margin-bottom: 20px; }
-        .res-para { font-size: 16px; line-height: 2; color: #444; background: var(--gray); padding: 25px; border-radius: 8px; }
-        
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .restart-btn { margin-top: 40px; width: 100%; padding: 20px; background: #000; color: #fff; border: none; font-weight: bold; cursor: pointer; }
+        body {
+            background-color: var(--ios-bg);
+            color: var(--ios-text);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .ios-container {
+            width: 100%;
+            max-width: 414px; /* iPhone 11 Pro Max width */
+            background-color: var(--ios-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 顶部导航栏风 */
+        .ios-header {
+            height: 44px;
+            background-color: rgba(242, 242, 247, 0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 0.5px solid var(--ios-border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .ios-header-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        /* 主体内容区 */
+        .ios-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 问题页样式 */
+        #quiz-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex: 1;
+        }
+
+        .progress-section {
+            margin-bottom: 30px;
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: var(--ios-subtext);
+            margin-bottom: 8px;
+            display: block;
+            text-align: center;
+        }
+
+        .ios-progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #E5E5EA;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background-color: var(--ios-accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 40px;
+            letter-spacing: -0.5px;
+        }
+
+        .ios-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .ios-opt-btn {
+            background-color: var(--ios-card);
+            border: none;
+            padding: 18px 20px;
+            border-radius: 12px;
+            font-size: 17px;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            color: var(--ios-text);
+            line-height: 1.3;
+        }
+
+        .ios-opt-btn:active {
+            background-color: #E5E5EA;
+        }
+
+        /* 结果页样式 */
+        #result-screen {
+            display: none;
+        }
+
+        .ios-card {
+            background-color: var(--ios-card);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .result-subtitle {
+            font-size: 13px;
+            color: var(--ios-accent);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-title-code {
+            font-size: 50px;
+            font-weight: 900;
+            letter-spacing: -3px;
+            margin: 10px 0;
+            line-height: 1;
+        }
+
+        .result-title-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--ios-text);
+            margin-bottom: 25px;
+        }
+
+        /* 雷达图容器 */
+        .chart-container {
+            width: 100%;
+            height: 250px;
+            margin-bottom: 30px;
+        }
+
+        .result-desc {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #3A3A3C;
+            background-color: #F8F8F8;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--ios-accent);
+        }
+
+        .ios-action-btn {
+            width: 100%;
+            padding: 17px;
+            border-radius: 12px;
+            border: none;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .ios-action-btn:active {
+            opacity: 0.8;
+        }
+
+        .primary-btn {
+            background-color: var(--ios-accent);
+            color: #FFFFFF;
+        }
+
+        .secondary-btn {
+            background-color: #E5E5EA;
+            color: var(--ios-accent);
+        }
+
+        /* 截图预览区域 */
+        #screenshot-preview {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #screenshot-image {
+            max-width: 100%;
+            max-height: 80%;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .close-preview {
+            margin-top: 20px;
+            background: #fff;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
 
-<div class="wrapper">
-    <div class="line"></div>
-    <div id="quiz-screen">
-        <span id="progress-text">ANALYZING: 0%</span>
-        <div class="question" id="q-text"></div>
-        <div class="options" id="opt-box"></div>
+<div class="ios-container">
+    <div class="ios-header">
+        <span class="ios-header-title">SBTI 6.0 Pro</span>
     </div>
 
-    <div id="result-screen">
-        <span style="font-size: 12px; font-weight: bold;">SCAN COMPLETED / 鉴定结果</span>
-        <div class="res-code" id="res-code"></div>
-        <div class="res-name" id="res-name"></div>
-        <div class="res-para" id="res-desc"></div>
-        <button class="restart-btn" onclick="location.reload()">不服？再次重塑灵魂</button>
+    <div class="ios-content">
+        <div id="quiz-screen">
+            <div class="progress-section">
+                <span class="progress-text" id="step-text">STEP 1 OF 15</span>
+                <div class="ios-progress-bar">
+                    <div id="progress-fill"></div>
+                </div>
+            </div>
+            <div class="question-text" id="q-text">正在校准精神阈值...</div>
+            <div class="ios-options" id="opt-box"></div>
+        </div>
+
+        <div id="result-screen">
+            <div class="ios-card" id="capture-card">
+                <div class="result-header">
+                    <span class="result-subtitle">Official Mental Report</span>
+                    <div class="result-title-code" id="res-code">ERR</div>
+                    <div class="result-title-name" id="res-name">未识别的废料</div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="radarChart"></canvas>
+                </div>
+
+                <div class="result-desc" id="res-desc"></div>
+            </div>
+
+            <button class="ios-action-btn primary-btn" onclick="generateCard()">生成图片卡片分享</button>
+            <button class="ios-action-btn secondary-btn" onclick="location.reload()">重新注入灵魂</button>
+        </div>
     </div>
 </div>
 
+<div id="screenshot-preview">
+    <span style="color: white; margin-bottom: 10px;">长按图片保存或分享</span>
+    <img id="screenshot-image" src="" alt="Screenshot">
+    <button class="close-preview" onclick="closePreview()">关闭</button>
+</div>
+
 <script>
+    // 维度定义（更接近专业，但文案依然疯）：
+    // A (Abstraction) - 抽象维度
+    // I (Insanity) - 精神混乱度
+    // L (Laziness) - 碳基懒惰度
+    // E (Electronics) - 赛博依赖度
     const questions = [
-        { q: "深夜你突然刷到一个很伤感的视频，你会？", a: [
-            { t: "迅速滑走，试图逃避任何深刻的情感交流", v: "B" },
-            { t: "把这首歌加进歌单，并脑补出一场旷世虐恋", v: "I" },
-            { t: "转发给某人后秒撤回，玩的就是心态", v: "I" },
-            { t: "面无表情地看完，内心想：这背景音乐挺好听", v: "B" }
+        { q: "‘疯狂星期四’在你看来，最符合以下哪种描述？", a: [
+            { t: "资本主义对电子羊的准时收割", v: "A" },
+            { t: "每周一次的‘V我50’乞讨艺术节", v: "I" },
+            { t: "只是因为懒得做饭而找到的合法借口", v: "L" },
+            { t: "朋友圈垃圾信息的集中爆发日", v: "E" }
         ]},
-        { q: "对于‘消息秒回’这件事，你的态度是？", a: [
-            { t: "看到就回，因为怕对方等太久会让我焦虑", v: "S" },
-            { t: "用意念回过了，直到三天后发现没发出去", v: "L" },
-            { t: "取决于对方是谁，以及我手机剩多少电", v: "P" },
-            { t: "回复速度取决于我当下那口饭有没有咽下去", v: "L" }
+        { q: "深夜刷到‘吗马梅之歌’，你的灵魂反应是？", a: [
+            { t: "一种来自量子力学的诡异共振", v: "A" },
+            { t: "疯狂转发给没睡的朋友，实施精神霸凌", v: "I" },
+            { t: "连静音都懒得点，任由它折磨我的耳膜", v: "L" },
+            { t: "默默收藏，作为下次发疯的素材", v: "E" }
         ]},
-        { q: "在人群中你突然想放屁，但周围很安静，你会？", a: [
-            { t: "憋到脸红脖子粗，感觉这辈子没这么努力过", v: "B" },
-            { t: "咳嗽一声掩盖，结果节奏没对上，更尴尬了", v: "S" },
-            { t: "观察周围谁看起来比较像‘嫌疑人’，提前露出嫌弃表情", v: "I" },
-            { t: "随缘，只要我不尴尬，尴尬的就是别人", v: "P" }
+        { q: "如果你中了 500 万，但必须在 24 小时内花光，你会？", a: [
+            { t: "买下一个精神病院，把自己关进去做院长", v: "I" },
+            { t: "雇人替我呼吸，体验纯粹的‘静止’", v: "L" },
+            { t: "全网全平台直播‘如何把钱烧掉’", v: "E" },
+            { t: "买下‘吗马梅’版权，禁止任何人播放", v: "A" }
         ]},
-        { q: "如果你中了 500 万，你第一件事是干嘛？", a: [
-            { t: "人间蒸发，拉黑所有认识的人", v: "I" },
-            { t: "买齐所有昂贵但没用的电子产品", v: "E" },
-            { t: "先把工作辞了，然后在家睡它个七天七夜", v: "L" },
-            { t: "发朋友圈暗示自己很有钱，但又不明说", v: "S" }
+        { q: "在微信群里，你最常用的角色是？", a: [
+            { t: "只会发‘撤回’和‘OK’的社交哑巴", v: "L" },
+            { t: "专门产出地狱笑话和抽象表情包的污染源", v: "A" },
+            { t: "盯着手机等别人发红包的赛博乞丐", v: "E" },
+            { t: "突然发疯然后消失的间歇性精神病", v: "I" }
         ]},
-        { q: "当你在外面吃饭发现上错菜了，你会？", a: [
-            { t: "算了吧，将就吃吧，开口说话好累", v: "L" },
-            { t: "默默吃完，然后在心里给这家店写了 800 字差评", v: "B" },
-            { t: "礼貌指出，但说完立刻后悔是不是太麻烦人家了", v: "S" },
-            { t: "拍照发朋友圈：这菜长得真抽象", v: "E" }
+        { q: "当你发现手机掉进没冲水的厕所，你的第一反应是？", a: [
+            { t: "伸手去捞，手机比尊严和健康重要多了", v: "E" },
+            { t: "看着它，思考它是如何物理穿越到那里的", v: "A" },
+            { t: "狂笑三声，终于有理由换最新的 Pro Max 了", v: "I" },
+            { t: "算了，它累了，让它休息吧", v: "L" }
         ]},
-        { q: "你最长一次盯着手机不动（发呆/刷废片）是多久？", a: [
-            { t: "直到手机砸到我鼻梁上", v: "E" },
-            { t: "直到我突然想起来我还有个屁没放", v: "P" },
-            { t: "直到尿意让我不得不瞬移到厕所", v: "L" },
-            { t: "我从来不盯着手机看，手机只是我的义肢", v: "E" }
+        { q: "你理想中的‘功德’累积方式是？", a: [
+            { t: "在网上跟人互骂，只要骂赢了就涨功德", v: "I" },
+            { t: "发明一个‘不需要动手指’就能敲的电子木鱼", v: "L" },
+            { t: "把所有的地狱笑话都点赞一遍", v: "A" },
+            { t: "把这个测试分享给 10 个朋友，不管他们想不想测", v: "E" }
         ]},
-        { q: "如果可以用一个词形容你的人际关系，你会选？", a: [
-            { t: "‘查无此人’", v: "B" },
-            { t: "‘单方面输出’", v: "I" },
-            { t: "‘互不打扰’", v: "P" },
-            { t: "‘云端好友’", v: "E" }
+        { q: "看到这道题时，你的坐姿是？", a: [
+            { t: "端正得像个即将接受审判的罪人", v: "I" },
+            { t: "已经瘫痪在床上，全身只有眼球在动", v: "L" },
+            { t: "保持着优雅的‘赛博C型脊椎’", v: "E" },
+            { t: "我正在试图用脚指头做这道题", v: "A" }
         ]},
-        { q: "你觉得‘明天’是什么样子的？", a: [
-            { t: "今天的重播，而且没有字幕", v: "L" },
-            { t: "一个需要我去应付的庞大怪兽", v: "S" },
-            { t: "新的发疯契机", v: "I" },
-            { t: "不知道，取决于我几点关手机", v: "E" }
+        { q: "关于‘明天’，你现在的真实想法是？", a: [
+            { t: "希望能一觉醒来发现自己变成了卡皮巴拉", v: "L" },
+            { t: "明天又是新的赛博废料产出日", v: "E" },
+            { t: "希望明天世界末日，大家一起玩完", v: "I" },
+            { t: "明天？明天是周几？", v: "A" }
+        ]},
+        { q: "朋友圈有人发‘懂得都懂’，你会？", a: [
+            { t: "评论：‘我不懂，你是猪吗？’", v: "I" },
+            { t: "默默拉黑，因为我也懒得懂", v: "L" },
+            { t: "心想：‘懂你个大头鬼’，然后划走", v: "E" },
+            { t: "回复一个‘嗎吗梅’，让他也不懂", v: "A" }
+        ]},
+        { q: "你的精神导师目前是谁？", a: [
+            { t: "卡皮巴拉（极度稳定的情绪死水）", v: "L" },
+            { t: "尖叫的尖叫鸡", v: "I" },
+            { t: "吗马梅（抽象派艺术领袖）", v: "A" },
+            { t: "手机里的‘充电完成’提示音", v: "E" }
         ]}
     ];
 
-    let currentQ = 0;
-    let scores = { B:0, I:0, L:0, P:0, E:0, S:0 };
+    let current = 0;
+    // 初始化四个维度的分数
+    let dimensions = { A: 0, I: 0, L: 0, E: 0 };
 
-    function render() {
-        const q = questions[currentQ];
-        document.getElementById('progress-text').innerText = "ANALYZING: " + Math.round(currentQ/questions.length*100) + "%";
+    function renderQuestion() {
+        const q = questions[current];
+        document.getElementById('step-text').innerText = `STEP ${current + 1} OF ${questions.length}`;
+        document.getElementById('progress-fill').style.width = ((current + 1) / questions.length * 100) + '%';
         document.getElementById('q-text').innerText = q.q;
         const box = document.getElementById('opt-box');
         box.innerHTML = '';
-        q.a.forEach(a => {
-            const btn = document.createElement('button');
-            btn.className = 'opt-btn';
-            btn.innerText = a.t;
-            btn.onclick = () => { scores[a.v]++; next(); };
-            box.appendChild(btn);
+        q.a.forEach(opt => {
+            const b = document.createElement('button');
+            b.className = 'ios-opt-btn';
+            b.innerText = opt.t;
+            b.onclick = () => { dimensions[opt.v]++; next(); };
+            box.appendChild(b);
         });
     }
 
     function next() {
-        currentQ++;
-        if(currentQ < questions.length) render();
+        current++;
+        if (current < questions.length) renderQuestion();
         else showResult();
     }
 
     function showResult() {
         document.getElementById('quiz-screen').style.display = 'none';
         document.getElementById('result-screen').style.display = 'block';
-        
-        // 简易逻辑判定核心标签
-        const maxKey = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
-        const resTitle = document.getElementById('res-name');
-        const resCode = document.getElementById('res-code');
-        const resDesc = document.getElementById('res-desc');
 
-        const data = {
-            I: ["【绝望的疯子】", "MENTAL-X", "你的大脑里装载了过量的互联网废料和陈年旧账。你是一个步履维艰的精神病患者，擅长在深夜通过自我折磨来获得某种扭曲的快感。建议离人群远点，你散发的‘发疯’气息已经快溢出屏幕了。"],
-            L: ["【瘫痪的土豆】", "LAZY-99", "你不是在偷懒，你是在进行一场漫长的‘生命节能计划’。你唯一的运动就是翻身，唯一的社交就是外卖到家时的那声‘谢谢’。你是一个会呼吸的植物，建议去森林里生活，那里没人嫌你没出息。"],
-            B: ["【社交伪装者】", "FAKE-ME", "你是那种在葬礼上都能想出笑话但绝对不敢笑出声的人。你戴着一张名为‘正常人’的廉价面具，实际上内心早已荒草丛生。你是一个彻头彻尾的伪人，甚至连你现在的表情都是演出来的。"],
-            E: ["【赛博义肢人】", "DATA-MAN", "如果你没了手机，你大概会在三秒内丧失基本的人类生存能力。你的感情存在云端，你的记忆存在收藏夹，你的尊严存在点赞数里。你不是人类，你是互联网排泄出来的活体数据。"],
-            S: ["【讨好型废物】", "NICE-TRASH", "你这种人活得最累，因为你甚至在为‘别人可能在讨厌你’这件事道歉。你是一个没有脊椎的社交软体，试图让每个人都开心，结果除了你自己，大家都挺开心的。"],
-            P: ["【职业摆烂王】", "FREE-DOM", "你是一个自由的混蛋。你对世界没有要求，世界对你也没有希望。你处于一种‘死后的平静’中，任何困难在你面前都会因为你懒得理它而自动消失。你是无敌的，因为你已经没什么可以失去了。"]
+        // 核心逻辑：找出最高分维度，并准备雷达图数据
+        const sorted = Object.entries(dimensions).sort((a, b) => b[1] - a[1]);
+        const top = sorted[0][0]; // 最高分维度
+
+        // 绘制雷达图
+        drawRadarChart(dimensions);
+
+        // 设定扎心结果
+        const results = {
+            A: ["AB-X", "抽象派艺术领袖", "你的大脑是互联网最纯净的‘该溜子’自留地。你说话像是在发乱码，做事像是在演行为艺术。你是当代梗文化的活化石，建议去精神病院挂个艺术顾问，以免传染你的抽象病毒给正常人。"],
+            I: ["MAD-01", "职业发疯选手", "你的精神状态处于间歇性崩塌与全面重启之间。白天的你是个‘看起来很健康’的正常人，深夜的你是咆哮、哭泣、尖叫的复合体。你是一个行走的炸药包，火星就是你今天的午饭。"],
+            L: ["SLOT-0", "碳基顶级懒虫", "恭喜！你已经完成了从人类向植物的全面退化。你唯一的社交是呼吸，唯一的运动是眨眼。你对世界没有要求，因为你连‘要求’两个字都懒得写。建议直接申请入土，省得费电。"],
+            E: ["WIFI-∞", "赛博义肢终端", "你的肉体只是手机的充电宝。你对现实世界的感知不超过屏幕边缘。你的喜怒哀乐取决于信号格数。你不是在上网，你就是网本身。离了WiFi和电量，你会在三秒内丧失基本生存能力。"]
         };
 
-        const r = data[maxKey];
-        resName.innerText = r[0];
-        resCode.innerText = r[1];
-        resDesc.innerHTML = "<b>深度报告：</b>" + r[2];
+        const r = results[top];
+        document.getElementById('res-code').innerText = r[0];
+        document.getElementById('res-name').innerText = r[1];
+        document.getElementById('res-desc').innerHTML = "<b>深度报告：</b>" + r[2];
     }
 
-    render();
+    // Chart.js 绘制雷达图
+    function drawRadarChart(data) {
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        const totalQs = questions.length;
+        
+        // 归一化数据，让图形更饱满
+        const labels = ['抽象 A', '混乱 I', '懒惰 L', '依赖 E'];
+        const chartData = [data.A, data.I, data.L, data.E].map(v => (v / totalQs) * 100 + 10); // 加个基数避免全为0
+
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '精神状态分布',
+                    data: chartData,
+                    backgroundColor: 'rgba(0, 122, 255, 0.2)', // iOS 蓝
+                    borderColor: 'rgba(0, 122, 255, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(0, 122, 255, 1)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#E5E5EA' },
+                        grid: { color: '#E5E5EA' },
+                        pointLabels: {
+                            font: { size: 14, weight: '600' },
+                            color: '#000'
+                        },
+                        ticks: { display: false },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                },
+                plugins: {
+                    legend: { display: false } // 隐藏图例
+                }
+            }
+        });
+    }
+
+    // html2canvas 生成图片卡片
+    function generateCard() {
+        const card = document.getElementById('capture-card');
+        
+        // 使用 html2canvas 截图
+        html2canvas(card, {
+            backgroundColor: '#F2F2F7', // 设定截图背景色
+            scale: 2, // 提高图片清晰度
+            useCORS: true // 允许跨域图片（如果有的话）
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const preview = document.getElementById('screenshot-preview');
+            const img = document.getElementById('screenshot-image');
+            img.src = imgData;
+            preview.style.display = 'flex';
+        });
+    }
+
+    function closePreview() {
+        document.getElementById('screenshot-preview').style.display = 'none';
+    }
+
+    renderQuestion();
 </script>
 </body>
 </html>
