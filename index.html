@@ -79,4 +79,116 @@
 
     <div class="p-6 border-t border-zinc-200 space-y-3">
       <button onclick="generateShareImage()" 
-              class="w-full bg-violet-600 hover:bg
+              class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition">
+        <i class="fa-solid fa-share-nodes"></i> 保存分享图到相册
+      </button>
+      <button onclick="restart()" 
+              class="w-full bg-zinc-100 hover:bg-zinc-200 py-4 rounded-2xl transition">
+        重新测试
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [ /* 保持你之前12个问题不变 */ 
+      { q: "被拉进一个陌生人拼团砍价群，天天@你帮忙助力，你会？", a: [{ t: "直接退群，懒得浪费一秒钟", v: "L" }, { t: "回一句'滚出去别@我，爱谁谁'", v: "S" }, { t: "默默屏蔽群消息，当这群人不存在", v: "A" }, { t: "发个'你妈死了'的表情包再退群", v: "E" }] },
+      { q: "亲戚在家族群里@你问'什么时候带对象回家结婚生娃啊'，你会？", a: [{ t: "直接回'等你孙子结婚的时候再说'", v: "I" }, { t: "拉黑+退出家族群，一了百了", v: "S" }, { t: "假装没看见，继续刷视频", v: "L" }, { t: "发'关你屁事'然后@全家嘲讽", v: "T" }] },
+      { q: "朋友圈有人晒新房新车还配文'普通家庭的普通幸福'，你刷到后？", a: [{ t: "点赞后立刻拉黑，省得恶心", v: "S" }, { t: "评论'凡尔赛是吧？真会玩'", v: "I" }, { t: "心里MMP一声，划走不看", v: "L" }, { t: "截图发到自己小群里群嘲", v: "E" }] },
+      { q: "老板在群里发'今晚加班，算你们加班费'但从来不给，你会？", a: [{ t: "直接回'我有事走不了'然后下线", v: "S" }, { t: "假装没看到，继续摸鱼", v: "L" }, { t: "在心里骂一句'画大饼王八蛋'", v: "A" }, { t: "发个'领导牛逼'的表情包阴阳", v: "I" }] },
+      { q: "聚餐时有人一直给你倒酒说'不喝就是不给面子'，你会？", a: [{ t: "直接把杯子倒扣桌上'我不喝'", v: "S" }, { t: "假笑说'我酒精过敏'然后继续吃菜", v: "A" }, { t: "心里骂娘但还是喝了", v: "L" }, { t: "回'那我就不给你面子了'直接走人", v: "E" }] },
+      { q: "地铁上有人大声外放短视频还抖腿，你会？", a: [{ t: "瞪他一眼然后戴耳机假装听不见", v: "A" }, { t: "直接吼'把声音关了行吗！'", v: "S" }, { t: "拍视频发朋友圈吐槽定位", v: "E" }, { t: "默默换个车厢，懒得吵", v: "L" }] },
+      { q: "前任突然点赞你三年前的朋友圈，你会？", a: [{ t: "立刻拉黑删除，永不往来", v: "S" }, { t: "点赞回去然后发'有病？'", v: "I" }, { t: "心里恶心一下，假装没看见", v: "A" }, { t: "截图发给闺蜜群嘲前任", v: "E" }] },
+      { q: "快递员半夜12点打电话催你签收，你会？", a: [{ t: "接起来就骂'明天再打，老子睡了'", v: "S" }, { t: "直接挂断然后拉黑号码", v: "L" }, { t: "回短信'明天再说'继续睡", v: "A" }, { t: "接起来阴阳'你妈半夜给你打电话你开心吗'", v: "I" }] },
+      { q: "公司团建强制要求每个人上台表演才艺，你会？", a: [{ t: "直接说'我不表演，你们玩'然后坐着", v: "S" }, { t: "找借口提前溜走", v: "L" }, { t: "心里一万句MMP但还是上去尬演", v: "A" }, { t: "上台唱一首《凉凉》阴阳全场", v: "E" }] },
+      { q: "朋友圈有人发'求赞求投票帮我冲KPI'，你会？", a: [{ t: "直接屏蔽朋友圈，永不看", v: "L" }, { t: "评论'自己努力去，别求爷爷告奶奶'", v: "S" }, { t: "假装没看见，划走", v: "A" }, { t: "点赞后私信'下次别发了，恶心'", v: "I" }] },
+      { q: "客服电话打来说'您有一笔逾期，请及时处理'其实是推销贷款，你会？", a: [{ t: "接起来就骂'你全家都逾期'然后挂", v: "S" }, { t: "直接拉黑号码永不接", v: "L" }, { t: "礼貌说'不需要'然后挂断", v: "A" }, { t: "接起来录音发到网上吐槽", v: "E" }] },
+      { q: "外卖骑手打电话让你下楼拿餐，你明明备注了放门口，他还一直催，你会？", a: [{ t: "接起来就怼'备注看不懂吗？放门口就行！'", v: "S" }, { t: "回'放门口我自己下来拿，别催了'", v: "I" }, { t: "心里骂一句但还是下去拿", v: "L" }, { t: "直接挂断不接，让他一直等", v: "E" }] }
+    ];
+
+    const resultTypes = {
+      "SSSS": { title: "社死终结者", desc: "直接、真实、暴躁。你最讨厌虚伪和浪费时间，生活里就是干就完事儿了。", color: "bg-red-100 text-red-700" },
+      "LLLL": { title: "顶级躺平大师", desc: "能不动就不动，能不吵就不吵。内心永远在说：关我屁事。", color: "bg-blue-100 text-blue-700" },
+      "EEEE": { title: "阴阳怪气王", desc: "表面云淡风轻，实际输出顶级阴阳。嘴上不说，心里全是损招。", color: "bg-amber-100 text-amber-700" },
+      "AAAA": { title: "社恐内耗冠军", desc: "表面最乖，内心把对方骂一万遍。默默承受一切的精神内耗选手。", color: "bg-zinc-200 text-zinc-700" },
+      "IIII": { title: "毒舌观察家", desc: "看透一切，但很少直接撕破脸。用最礼貌的方式说最狠的话。", color: "bg-purple-100 text-purple-700" },
+      "SELI": { title: "精神分裂选手", desc: "时而暴躁时而躺平，时而阴阳时而社恐，复杂的当代年轻人。", color: "bg-violet-100 text-violet-700" },
+      "SLEE": { title: "嘴硬心软型", desc: "表面凶巴巴，实际最怕麻烦。怼完人后自己默默反省。", color: "bg-orange-100 text-orange-700" },
+      "MIX":  { title: "当代精神病", desc: "又社恐又社牛，又想躺平又想内卷，精神状态永远在线的真实人类。", color: "bg-violet-100 text-violet-700" }
+    };
+
+    let currentQuestion = 0;
+    let scores = { S:0, L:0, A:0, E:0, I:0, T:0 };
+
+    function renderQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById('q-number').textContent = currentQuestion + 1;
+      document.getElementById('question-text').textContent = q.q;
+      document.getElementById('progress-text').textContent = `${currentQuestion + 1} / 12`;
+      document.getElementById('progress-bar').style.width = `${((currentQuestion + 1) / 12) * 100}%`;
+
+      const optionsDiv = document.getElementById('options');
+      optionsDiv.innerHTML = '';
+
+      q.a.forEach(option => {
+        const btn = document.createElement('div');
+        btn.className = `option-card bg-white border border-zinc-200 hover:border-violet-300 rounded-2xl p-6 cursor-pointer text-lg`;
+        btn.innerHTML = option.t;
+        btn.onclick = () => selectAnswer(option.v);
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(value) {
+      if (value) scores[value]++;
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      let maxScore = Math.max(...Object.values(scores));
+      let main = Object.keys(scores).find(k => scores[k] === maxScore) || 'MIX';
+      let resultKey = Object.keys(resultTypes).find(k => k.includes(main)) || 'MIX';
+      if (main === 'T') resultKey = 'IIII';
+
+      const result = resultTypes[resultKey];
+
+      document.getElementById('result-page').classList.remove('hidden');
+      document.querySelector('.max-w-lg').classList.add('hidden');
+
+      document.getElementById('type-badge').className = `inline-block px-6 py-2.5 ${result.color} rounded-2xl text-xl font-bold mb-6`;
+      document.getElementById('type-badge').textContent = result.title;
+      document.getElementById('result-title').textContent = result.title;
+      document.getElementById('result-desc').textContent = result.desc;
+
+      document.getElementById('score-s').textContent = scores.S;
+      document.getElementById('score-l').textContent = scores.L;
+      document.getElementById('score-e').textContent = scores.E;
+    }
+
+    function generateShareImage() {
+      const card = document.getElementById('result-card');
+      html2canvas(card, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = '我的SBTI精神状态鉴定.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+
+    function restart() {
+      currentQuestion = 0;
+      scores = { S:0, L:0, A:0, E:0, I:0, T:0 };
+      document.getElementById('result-page').classList.add('hidden');
+      document.querySelector('.max-w-lg').classList.remove('hidden');
+      renderQuestion();
+    }
+
+    // 初始化
+    renderQuestion();
+  </script>
+</body>
+</html>
