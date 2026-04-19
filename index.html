@@ -8,14 +8,13 @@
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
-    body { font-family: 'Microsoft YaHei', system-ui, sans-serif; }
-    .option-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .option-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+    body { font-family: system-ui, -apple-system, 'Microsoft YaHei', sans-serif; }
+    .option-card { transition: all 0.3s; }
+    .option-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
   </style>
 </head>
 <body class="bg-zinc-50 text-zinc-900 min-h-screen">
-  <div class="max-w-lg mx-auto min-h-screen flex flex-col bg-white shadow-xl">
-    
+  <div id="main-page" class="max-w-lg mx-auto min-h-screen flex flex-col bg-white shadow-xl">
     <!-- Header -->
     <div class="p-6 border-b border-zinc-200">
       <h1 class="text-4xl font-bold text-violet-600">SBTI</h1>
@@ -40,7 +39,6 @@
       </div>
       <h2 id="question-text" class="text-2xl leading-relaxed font-medium text-zinc-800"></h2>
 
-      <!-- Options -->
       <div id="options" class="mt-10 space-y-4"></div>
     </div>
 
@@ -50,16 +48,16 @@
   </div>
 
   <!-- Result Page -->
-  <div id="result-page" class="hidden fixed inset-0 bg-white flex flex-col">
-    <div class="flex-1 p-8 overflow-auto">
+  <div id="result-page" class="hidden fixed inset-0 bg-white flex flex-col overflow-auto">
+    <div class="flex-1 p-8">
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-violet-600">鉴定完成</h1>
         <p class="text-zinc-500 mt-2">你的2026精神状态报告</p>
       </div>
       
-      <div id="result-card" class="bg-white border border-zinc-200 rounded-3xl p-8 shadow-sm">
-        <div id="type-badge" class="inline-block px-6 py-2.5 bg-violet-100 text-violet-700 rounded-2xl text-xl font-bold mb-6"></div>
-        <h2 id="result-title" class="text-3xl font-bold mb-4 text-zinc-900"></h2>
+      <div id="result-card" class="bg-white border border-zinc-200 rounded-3xl p-8 shadow">
+        <div id="type-badge" class="inline-block px-6 py-2.5 rounded-2xl text-xl font-bold mb-6"></div>
+        <h2 id="result-title" class="text-3xl font-bold mb-4"></h2>
         <p id="result-desc" class="text-zinc-600 leading-relaxed text-[17px]"></p>
         
         <div class="mt-10 pt-6 border-t grid grid-cols-3 gap-4 text-center">
@@ -68,29 +66,27 @@
           <div><div class="text-3xl font-bold text-rose-600" id="score-e">0</div><div class="text-xs text-zinc-500">阴阳</div></div>
         </div>
 
-        <!-- 二维码区域 -->
         <div class="mt-8 pt-6 border-t border-dashed text-center">
           <p class="text-sm text-zinc-500 mb-3">扫码测试你的精神状态</p>
-          <img id="qrcode" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://huiweixuan61406-beep.github.io/index.html/" 
-               class="mx-auto rounded-2xl shadow-sm" alt="二维码">
+          <img id="qrcode" src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=https://huiweixuan61406-beep.github.io/index.html" 
+               class="mx-auto rounded-2xl shadow" alt="二维码">
         </div>
       </div>
     </div>
 
-    <div class="p-6 border-t border-zinc-200 space-y-3">
-      <button onclick="generateShareImage()" 
-              class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition">
+    <div class="p-6 border-t border-zinc-200 space-y-3 sticky bottom-0 bg-white">
+      <button onclick="generateShareImage()" class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2">
         <i class="fa-solid fa-share-nodes"></i> 保存分享图到相册
       </button>
-      <button onclick="restart()" 
-              class="w-full bg-zinc-100 hover:bg-zinc-200 py-4 rounded-2xl transition">
+      <button onclick="restart()" class="w-full bg-zinc-100 hover:bg-zinc-200 py-4 rounded-2xl">
         重新测试
       </button>
     </div>
   </div>
 
   <script>
-    const questions = [ /* 保持你之前12个问题不变 */ 
+    // 12个问题
+    const questions = [
       { q: "被拉进一个陌生人拼团砍价群，天天@你帮忙助力，你会？", a: [{ t: "直接退群，懒得浪费一秒钟", v: "L" }, { t: "回一句'滚出去别@我，爱谁谁'", v: "S" }, { t: "默默屏蔽群消息，当这群人不存在", v: "A" }, { t: "发个'你妈死了'的表情包再退群", v: "E" }] },
       { q: "亲戚在家族群里@你问'什么时候带对象回家结婚生娃啊'，你会？", a: [{ t: "直接回'等你孙子结婚的时候再说'", v: "I" }, { t: "拉黑+退出家族群，一了百了", v: "S" }, { t: "假装没看见，继续刷视频", v: "L" }, { t: "发'关你屁事'然后@全家嘲讽", v: "T" }] },
       { q: "朋友圈有人晒新房新车还配文'普通家庭的普通幸福'，你刷到后？", a: [{ t: "点赞后立刻拉黑，省得恶心", v: "S" }, { t: "评论'凡尔赛是吧？真会玩'", v: "I" }, { t: "心里MMP一声，划走不看", v: "L" }, { t: "截图发到自己小群里群嘲", v: "E" }] },
@@ -121,18 +117,18 @@
 
     function renderQuestion() {
       const q = questions[currentQuestion];
-      document.getElementById('q-number').textContent = currentQuestion + 1;
-      document.getElementById('question-text').textContent = q.q;
-      document.getElementById('progress-text').textContent = `${currentQuestion + 1} / 12`;
-      document.getElementById('progress-bar').style.width = `${((currentQuestion + 1) / 12) * 100}%`;
+      document.getElementById("q-number").textContent = currentQuestion + 1;
+      document.getElementById("question-text").textContent = q.q;
+      document.getElementById("progress-text").textContent = `${currentQuestion + 1} / 12`;
+      document.getElementById("progress-bar").style.width = `${((currentQuestion + 1) / 12) * 100}%`;
 
-      const optionsDiv = document.getElementById('options');
-      optionsDiv.innerHTML = '';
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
 
       q.a.forEach(option => {
-        const btn = document.createElement('div');
-        btn.className = `option-card bg-white border border-zinc-200 hover:border-violet-300 rounded-2xl p-6 cursor-pointer text-lg`;
-        btn.innerHTML = option.t;
+        const btn = document.createElement("div");
+        btn.className = "option-card bg-white border border-zinc-200 hover:border-violet-400 rounded-2xl p-6 cursor-pointer text-lg";
+        btn.textContent = option.t;
         btn.onclick = () => selectAnswer(option.v);
         optionsDiv.appendChild(btn);
       });
@@ -150,31 +146,30 @@
 
     function showResult() {
       let maxScore = Math.max(...Object.values(scores));
-      let main = Object.keys(scores).find(k => scores[k] === maxScore) || 'MIX';
-      let resultKey = Object.keys(resultTypes).find(k => k.includes(main)) || 'MIX';
-      if (main === 'T') resultKey = 'IIII';
+      let main = Object.keys(scores).find(k => scores[k] === maxScore) || "MIX";
+      let resultKey = Object.keys(resultTypes).find(k => k.includes(main)) || "MIX";
+      if (main === "T") resultKey = "IIII";
 
       const result = resultTypes[resultKey];
 
-      document.getElementById('result-page').classList.remove('hidden');
-      document.querySelector('.max-w-lg').classList.add('hidden');
+      document.getElementById("main-page").classList.add("hidden");
+      document.getElementById("result-page").classList.remove("hidden");
 
-      document.getElementById('type-badge').className = `inline-block px-6 py-2.5 ${result.color} rounded-2xl text-xl font-bold mb-6`;
-      document.getElementById('type-badge').textContent = result.title;
-      document.getElementById('result-title').textContent = result.title;
-      document.getElementById('result-desc').textContent = result.desc;
+      document.getElementById("type-badge").className = `inline-block px-6 py-2.5 ${result.color} rounded-2xl text-xl font-bold mb-6`;
+      document.getElementById("type-badge").textContent = result.title;
+      document.getElementById("result-title").textContent = result.title;
+      document.getElementById("result-desc").textContent = result.desc;
 
-      document.getElementById('score-s').textContent = scores.S;
-      document.getElementById('score-l').textContent = scores.L;
-      document.getElementById('score-e').textContent = scores.E;
+      document.getElementById("score-s").textContent = scores.S;
+      document.getElementById("score-l").textContent = scores.L;
+      document.getElementById("score-e").textContent = scores.E;
     }
 
     function generateShareImage() {
-      const card = document.getElementById('result-card');
-      html2canvas(card, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = '我的SBTI精神状态鉴定.png';
-        link.href = canvas.toDataURL('image/png');
+      html2canvas(document.getElementById("result-card"), {scale: 2, backgroundColor: "#ffffff"}).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "我的SBTI精神状态鉴定.png";
+        link.href = canvas.toDataURL("image/png");
         link.click();
       });
     }
@@ -182,13 +177,13 @@
     function restart() {
       currentQuestion = 0;
       scores = { S:0, L:0, A:0, E:0, I:0, T:0 };
-      document.getElementById('result-page').classList.add('hidden');
-      document.querySelector('.max-w-lg').classList.remove('hidden');
+      document.getElementById("result-page").classList.add("hidden");
+      document.getElementById("main-page").classList.remove("hidden");
       renderQuestion();
     }
 
-    // 初始化
-    renderQuestion();
+    // 启动
+    window.onload = renderQuestion;
   </script>
 </body>
 </html>
